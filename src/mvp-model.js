@@ -1,0 +1,30 @@
+import {localDay} from './sleep.js';
+export const FACTORS=[
+ {id:'stress',name:'Early-waking stress pattern',day:13,practice:'Choose a familiar response',action:'Let your shoulders settle if comfortable. Keep the light low and the clock out of sight. You do not have to solve the night.'},
+ {id:'mind',name:'Racing mind',day:8,practice:'Close the tabs in your mind',action:'Give one thought a place on paper. Then notice your jaw, shoulders and hands, using a little less effort if comfortable.'},
+ {id:'comfort',name:'Night-time heat or discomfort',day:18,practice:'Make your space more comfortable',action:'Try one small comfort adjustment: change your bedding or turn your pillow. Choose what feels comfortable for you.'},
+ {id:'timing',name:'Evening drink timing',day:17,practice:'Notice your caffeine pattern',action:'Let this be a moment of rest, without trying to force sleep. Keep screens away. Tomorrow you can review your evening drinks.'},
+ {id:'bathroom',name:'Night bathroom trips',day:13,practice:'Make a gentle return plan',action:'Use enough light to move safely. Return at your own pace and put the phone aside. When comfortable, let your body settle.'}
+];
+const has=(v,i)=>Array.isArray(v)?v.includes(i):v===i;
+export function personalProfile(answers=[]){
+ const points=FACTORS.map(()=>0),evidence=FACTORS.map(()=>[]);const add=(id,q,n=1)=>{const i=FACTORS.findIndex(f=>f.id===id);points[i]+=n;if(!evidence[i].includes(q))evidence[i].push(q);};
+ if(answers[3]===1)add('stress',3);if(has(answers[6],4))add('stress',6);if([2,3].includes(answers[16]))add('stress',16,2);
+ if([2,3].includes(answers[5]))add('mind',5);if(has(answers[6],0))add('mind',6,2);if([2,3].includes(answers[7]))add('mind',7);if(answers[10]===0)add('mind',10);
+ if([1,2].includes(answers[17]))add('comfort',17,2);if(answers[13]===2)add('comfort',13);if(has(answers[6],3))add('comfort',6);
+ if(answers[18]===1)add('timing',18,2);if([1,2].includes(answers[19]))add('timing',19,2);
+ if([1,2,3].includes(answers[20]))add('bathroom',20,2);
+ const factors=FACTORS.map((f,i)=>({...f,points:points[i],evidence:evidence[i],strength:evidence[i].length>=2?'More signals':'Worth noticing'})).filter(f=>f.points>0).sort((a,b)=>b.points-a.points);
+ const primary=factors[0]||null;return{rulesVersion:2,name:primary?.name||'Your pattern is still unfolding',day:primary?.day||2,factors:factors.slice(0,3),evidence:primary?.evidence||[],secondary:factors[1]?.name||null,answers:structuredClone(answers),baseline:baselineFor(answers),completedAt:new Date().toISOString()};
+}
+export function baselineFor(a=[]){const frequency=['0','1–2','3–4','5+','Not sure'][a[2]]||'Not sure';return{frequency,nights:[0,2,4,6,null][a[2]]??null,unit:'difficult nights per week',remembered:[0,1,2,3,null][a[4]]??null,duration:['Under 15 min','15–30 min','30–60 min','Over 60 min','Not sure'][a[5]]||'Not sure',source:'quiz estimate'};}
+export function nightEnding(date=new Date()){const d=new Date(date);if(d.getHours()>=18)d.setDate(d.getDate()+1);return localDay(d);}
+export function startWake(previous={},now=new Date(),forceNew=false){const events=(previous.wakeEvents||[]).map(e=>({...e})),active=events.find(e=>!e.endedAt);if(active&&!forceNew)return{...previous,wakeEvents:events,activeId:active.id,reused:true};if(active)active.endedAt=now.toISOString();const id='wake-'+now.getTime()+'-'+Math.random().toString(36).slice(2,8);events.push({id,startedAt:now.toISOString(),endedAt:null,parkedThought:''});return{...previous,day:previous.day||nightEnding(now),source:previous.source||'manual',...(!previous.checkinComplete?{awakenings:events.length,awakeningLowerBound:true}:{}),wakeEvents:events.slice(-30),activeId:id,reused:false};}
+export function checkinData(previous,answers){const count=[0,1,2,3][answers.wakes];if(!Number.isInteger(count))throw Error('Choose how often you woke.');if(count>0&&!Number.isInteger(answers.duration))throw Error('Choose your best estimate of time awake.');if(!Number.isInteger(answers.rested)||answers.rested<1||answers.rested>5)throw Error('Choose how rested you feel.');const durations=[5,15,30,50];return{...previous,awakenings:count,awakeningLowerBound:count===3,awakeMinutes:count===0?0:durations[answers.duration],awakeRange:count===0?'No remembered waking':['Under 10 min','10–20 min','20–40 min','Over 40 min'][answers.duration],rested:String(answers.rested)+'/5',restedRating:answers.rested,checkinComplete:true,source:'manual',updatedAt:new Date().toISOString()};}
+export const PLANS=[{months:1,today:16.99,renewal:29.99},{months:3,today:27.99,renewal:49.99},{months:6,today:39.99,renewal:69.99}];
+export function addMonths(date,months){const d=new Date(date),day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+months);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return d.toISOString();}
+export function demoSubscription(planIndex,now=new Date()){const p=PLANS[planIndex];if(!p)throw Error('Choose a plan.');return{demo:true,status:'active',planIndex,...p,startedAt:now.toISOString(),periodEnd:addMonths(now,p.months),cancelAtEnd:false,pausedUntil:null};}
+export function cancelDemo(subscription){if(!subscription?.demo)throw Error('Only demonstration subscriptions are supported in this pilot.');return{...subscription,status:'cancelled',cancelAtEnd:true,pausedUntil:null};}
+export function pauseDemo(subscription,now=new Date()){if(!subscription?.demo||subscription.status!=='active')throw Error('An active demonstration plan is required.');return{...subscription,status:'paused',pausedUntil:addMonths(now,1)};}
+export function quietHour(hour){return hour>=22||hour<6;}
+export function comparableWeeks(rows,now=new Date()){const today=localDay(now),d=new Date(now);d.setDate(d.getDate()-6);const start=localDay(d);d.setDate(d.getDate()-7);const prev=localDay(d);let result={current:[],previous:[]};for(const r of rows.filter(r=>Number.isFinite(r.awakenings)&&r.day<=today)){if(r.day>=start)result.current.push(r);else if(r.day>=prev)result.previous.push(r);}return result;}

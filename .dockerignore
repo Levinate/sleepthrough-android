@@ -1,0 +1,9 @@
+node_modules
+.git
+android
+src
+www
+shared
+test
+*.md
+.env*

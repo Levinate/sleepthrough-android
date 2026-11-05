@@ -1,0 +1,15 @@
+node_modules/
+www/
+**/build/
+**/.gradle/
+**/.idea/
+**/local.properties
+android/capacitor-cordova-android-plugins/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor*.json
+*.keystore
+*.jks
+.env*
+*.log
+*.apk
+!releases/SleepThrough-0.5.0-pilot.apk
