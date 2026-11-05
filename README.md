@@ -2,6 +2,10 @@
 
 Отдельный репозиторий мобильного приложения. Веб-сайт находится в [Levinate/sleepthrough](https://github.com/Levinate/sleepthrough).
 
+**Страница установки:** [Android на Railway](https://sleepthrough-android-production.up.railway.app). **[Скачать APK](https://sleepthrough-android-production.up.railway.app/app.apk)** · **[GitHub Release](https://github.com/Levinate/sleepthrough-android/releases/tag/v0.5.0-pilot)**.
+
+Документация: [стек](STACK.md), [публикация и обновление](DEPLOYMENT.md).
+
 **Версия:** 0.5.0-pilot · **package ID:** `com.sleepthrough.app` · **versionCode:** 5.
 
 Готовый APK находится в [releases/SleepThrough-0.5.0-pilot.apk](releases/SleepThrough-0.5.0-pilot.apk). Это universal debug-signed pilot для установки напрямую, не Google Play release. Обновлять поверх предыдущего SleepThrough, без удаления приложения/данных. Сохранён сертификат предыдущей версии. Нужны Android 9+ и актуальный WebView/Chrome.
