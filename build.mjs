@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import {build} from 'esbuild';
 fs.mkdirSync('www',{recursive:true});
-for(const name of ['index.html','style.css','mvp.css'])fs.copyFileSync('src/'+name,'www/'+name);
+for(const name of ['index.html','style.css','mvp.css','cabinet-theme.css','boot.js'])fs.copyFileSync('src/'+name,'www/'+name);
 fs.copyFileSync('shared/activities.css','www/practice.css');
 fs.mkdirSync('www/assets',{recursive:true});
 for(const scene of ['room','calendar','clock','thoughts','rhythm','energy'])fs.copyFileSync('shared/assets/quiz-'+scene+'.svg','www/assets/quiz-'+scene+'.svg');

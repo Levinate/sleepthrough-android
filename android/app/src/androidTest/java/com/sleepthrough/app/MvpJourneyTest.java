@@ -40,29 +40,52 @@ public class MvpJourneyTest {
    java.io.File dir=new java.io.File(activity.getExternalFilesDir(null),"qa");dir.mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(dir,name+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
   }catch(Throwable e){error.set(e);}finally{done.countDown();}});
  }
- @Test public void completeAssessmentNightCheckinAndPracticeSurviveRecreation() throws Exception {
-  assertTrue("Never seed a personal phone",android.os.Build.MODEL.startsWith("sdk_gphone"));
+
+ @Test public void cabinetRequiresLoginAndTestDataSurvivesRecreation() throws Exception {
+  assertTrue("Never seed a personal phone",android.os.Build.HARDWARE.equals("ranchu") && (android.os.Build.MODEL.startsWith("sdk_gphone") || android.os.Build.MODEL.equals("Android SDK built for x86_64")));
   try(ActivityScenario<MainActivity> a=ActivityScenario.launch(MainActivity.class)){
    waitFor(a,"!!window.Capacitor?.Plugins?.SecureVault");
-   run(a,"await Capacitor.Plugins.SecureVault.set({key:'state:local',value:JSON.stringify({started:false,records:{},quiz:{answers:[],step:0}})})");
-   a.recreate();helpers(a);
-   run(a,"qa.tap('[data-action=mvp-start-quiz]');await qa.wait(()=>document.querySelector('[data-mvp-answer]')); const answers=[0,2,3,1,2,2,0,3,1,0,0,1,2,2,1,0,3,2,1,2,1];for(let i=0;i<answers.length;i++){if(i===3){await qa.wait(()=>document.querySelector('[data-action=mvp-fact]'));qa.tap('[data-action=mvp-fact]');}await qa.wait(()=>document.querySelector('.mvp-quiz .row small')?.textContent===`${i+1} / 21`);await qa.wait(()=>!document.querySelector('[data-mvp-answer]')?.disabled);qa.tap(`[data-mvp-answer='${answers[i]}']`);}await qa.wait(()=>document.querySelector('.mvp-result'));if(document.body.innerText.includes('Sleep Score'))throw Error('Obsolete score visible');if(document.querySelectorAll('.factor-row').length!==3)throw Error('Expected three supported factors');");
-   snapshot(a,"01-result");
-   run(a,"qa.tap('[data-action=mvp-lead]');await qa.wait(()=>document.querySelector('#mvp-lead-form'));qa.fill('[name=name]','QA Sarah');qa.fill('[name=email]','qa@example.test');document.querySelector('[name=adult]').checked=true;document.querySelector('#mvp-lead-form').requestSubmit();await qa.wait(()=>document.querySelector('.mvp-plans'));qa.tap('[data-action=mvp-checkout]');if(!document.querySelector('#consent-error').textContent)throw Error('Consent gate missing');if(location.hash==='#checkout')throw Error('Unchecked checkout');");
-   snapshot(a,"02-plans");
-   run(a,"document.querySelector('#mvp-terms-check').checked=true;qa.tap('[data-action=mvp-checkout]');await qa.wait(()=>document.querySelector('[data-action=mvp-checkout-success]'));qa.tap('[data-action=mvp-checkout-success]');await qa.wait(()=>document.querySelector('[data-action=mvp-onboarding-next]'));qa.tap('[data-action=mvp-onboarding-next]');await qa.wait(()=>document.querySelector('#breath-circle'));qa.tap('[data-action=mvp-onboarding-next]');await qa.wait(()=>document.querySelector('#mvp-routine-form'));document.querySelector('#mvp-routine-form').requestSubmit();await qa.wait(()=>document.querySelector('[data-action=mvp-reminders]'));qa.tap('[data-action=mvp-onboarding-next]');await qa.wait(()=>document.querySelector('[data-action=mvp-onboarding-finish]'));qa.tap('[data-action=mvp-onboarding-finish]');await qa.wait(()=>document.querySelector('.awake-main'));if(!document.querySelector('[data-action=checkin]'))throw Error('Morning check-in missing');");
-   snapshot(a,"03-today");
-   run(a,"qa.tap('[data-action=mvp-awake-open]');await qa.wait(()=>document.querySelector('.protocol'));qa.tap('[data-action=mvp-night-next]');await qa.wait(()=>document.querySelector('.protocol-content small'));qa.tap('[data-action=mvp-night-next]');await qa.wait(()=>document.querySelector('#mvp-park-form'));qa.fill('[name=thought]','Bring the notes tomorrow');document.querySelector('#mvp-park-form').requestSubmit();await qa.wait(()=>document.querySelector('#breath-circle'));await qa.wait(async()=>{const s=await qa.state();return Object.values(s.records).some(r=>r.kind==='night'&&r.data.wakeEvents?.length===1)});");
-   snapshot(a,"04-night");
-   AtomicReference<Float> brightness=new AtomicReference<>();a.onActivity(activity->brightness.set(activity.getWindow().getAttributes().screenBrightness));assertEquals(.08f,brightness.get(),.001f);
-   run(a,"location.hash='today';await qa.wait(()=>document.querySelector('.awake-main'));qa.tap('[data-action=mvp-awake-open]');await qa.wait(()=>document.querySelector('#breath-circle'));const s=await qa.state();if(Object.values(s.records).find(r=>r.kind==='night').data.wakeEvents.length!==1)throw Error('Reopen counted twice');qa.tap('[data-action=mvp-night-next]');await qa.wait(()=>document.querySelector('[data-action=mvp-night-sleepy]'));qa.tap('[data-action=mvp-night-sleepy]');await qa.wait(()=>document.querySelector('.awake-main'));const last=(await qa.state()).currentNightDay;location.hash='night-detail/'+last;await qa.wait(()=>document.querySelector('[data-action=checkin][data-day]'));qa.tap('[data-action=checkin][data-day]');await qa.wait(()=>document.querySelector('[data-mvp-check]'));qa.tap('[data-mvp-check=\"1\"]');qa.tap('[data-mvp-check=\"2\"]');qa.tap('[data-mvp-check=\"3\"]');await qa.wait(()=>document.querySelector('[data-action=mvp-check-close]'));if(!document.querySelector('#modal-body').textContent.includes('Bring the notes tomorrow'))throw Error('Parked thought missing');");
-   snapshot(a,"05-checkin");
-   run(a,"qa.tap('[data-action=mvp-check-close]');location.hash='lesson/12';await qa.wait(()=>document.querySelector('[data-lesson-step=\"1\"]'));qa.tap('[data-lesson-step=\"1\"]');await qa.wait(()=>document.querySelector('[data-work-pick=jaw]'));qa.tap('[data-work-pick=jaw]');await qa.wait(()=>document.querySelector('[data-work-pick=jaw]')?.getAttribute('aria-pressed')==='true');qa.tap('[data-work-pick=shoulders]');await qa.wait(()=>document.querySelector('[data-work-pick=shoulders]')?.getAttribute('aria-pressed')==='true');qa.tap('[data-work-pick=hands]');await qa.wait(()=>document.querySelector('[data-work-continue]')?.disabled===false);qa.tap('[data-work-continue]');await qa.wait(()=>document.querySelector('[data-action=complete]'));qa.tap('[data-action=complete]');await qa.wait(()=>location.hash==='#complete');await qa.wait(async()=>!!(await qa.state()).records['lesson:12']?.data.complete);");
-   snapshot(a,"06-practice");
-   a.recreate();waitFor(a,"document.querySelector('#app') && !document.body.innerText.includes('Opening your sleep space')");
-   run(a,"const s=JSON.parse((await Capacitor.Plugins.SecureVault.get({key:'state:local'})).value);if(s.records['profile'].data.name!=='QA Sarah'||!s.records['lesson:12'].data.complete||!s.records['lesson:12'].data.work.picks.hands)throw Error('Reopen lost profile or practice');if(!Object.values(s.records).some(r=>r.kind==='night'&&r.data.checkinComplete))throw Error('Check-in lost');location.hash='settings';");
-   waitFor(a,"!!document.querySelector('[data-action=mvp-cancel-open]')");
-   run(a,"document.querySelector('[data-action=mvp-cancel-open]').click();await new Promise(r=>setTimeout(r,100));document.querySelector('[data-action=mvp-cancel-confirm]').click();for(let i=0;i<100;i++){const s=JSON.parse((await Capacitor.Plugins.SecureVault.get({key:'state:local'})).value);if(s.records.commerce.data.subscription.cancelAtEnd)return;await new Promise(r=>setTimeout(r,100));}throw Error('Cancellation not saved');");
+   run(a,"await Capacitor.Plugins.SecureVault.remove({key:'state:demo'})");
+   a.recreate();waitFor(a,"!!document.querySelector('[data-action=enter-demo]') && !document.querySelector('[data-action=enter-demo]').disabled");
+   snapshot(a,"01-login");
+   for(String route:new String[]{"today","night","quiz","plans","checkout","path"}){
+    js(a,"location.hash='#"+route+"'");waitFor(a,"!!document.querySelector('#auth-form')");
+    assertEquals("Guest navigation hidden","true",js(a,"document.querySelector('#bottom').classList.contains('hidden')"));
+   }
+   js(a,"document.querySelector('[data-action=enter-demo]').click()");waitFor(a,"document.body.innerText.includes('A clearer night') && location.hash==='#today'");
+   assertEquals("Five stable app destinations","5",js(a,"document.querySelectorAll('#bottom a').length"));
+   snapshot(a,"02-today");
+   js(a,"location.hash='#checkout'");waitFor(a,"document.body.innerText.includes('A clearer night')");
+   assertEquals("No checkout","true",js(a,"!document.querySelector('[data-action=mvp-checkout]') && !document.querySelector('[data-mvp-answer]')"));
+   js(a,"location.hash='#path'");waitFor(a,"!!document.querySelector('.week-tabs')");snapshot(a,"03-path");
+   assertEquals("No totals on course screen","true",js(a,"!document.querySelector('.learning-stats')"));
+   js(a,"location.hash='#settings'");waitFor(a,"!!document.querySelector('.learning-stats')");snapshot(a,"04-account");
+   assertEquals("Sample points stay separate","true",js(a,"document.querySelector('.learning-stats').innerText.includes('10')"));
+   js(a,"location.hash='#today'");waitFor(a,"!!document.querySelector('[data-action=mvp-awake-open]')");
+   js(a,"document.querySelector('[data-action=mvp-awake-open]').click()");waitFor(a,"!!document.querySelector('[data-action=mvp-night-next]')");
+   snapshot(a,"05-night");
+   js(a,"document.querySelector('[data-action=mvp-night-next]').click()");Thread.sleep(300);
+   js(a,"document.querySelector('[data-action=mvp-night-next]').click()");waitFor(a,"!!document.querySelector('#mvp-park-form')");
+   js(a,"document.querySelector('[name=thought]').value='Review my list after breakfast';document.querySelector('#mvp-park-form').requestSubmit()");waitFor(a,"!!document.querySelector('.breath-circle')");
+   js(a,"document.querySelector('[data-action=mvp-night-next]').click()");waitFor(a,"!!document.querySelector('[data-action=mvp-night-sleepy]')");
+   js(a,"document.querySelector('[data-action=mvp-night-sleepy]').click()");waitFor(a,"location.hash==='#today'");
+   js(a,"document.querySelector('[data-action=checkin]').click()");waitFor(a,"!!document.querySelector('[data-mvp-check]')");
+   js(a,"document.querySelector('[data-mvp-check=\"2\"]').click()");Thread.sleep(200);
+   js(a,"document.querySelector('[data-mvp-check=\"1\"]').click()");Thread.sleep(200);
+   js(a,"document.querySelector('[data-mvp-check=\"4\"]').click()");waitFor(a,"document.querySelector('#modal-body').innerText.includes('Your night is saved')");
+   js(a,"document.querySelector('[data-action=mvp-check-close]').click();location.hash='#lesson/12'");waitFor(a,"!!document.querySelector('[data-lesson-step]')");
+   js(a,"document.querySelector('[data-lesson-step=\"1\"]').click()");waitFor(a,"!!document.querySelector('[data-work-pick=jaw]')");
+   js(a,"document.querySelector('[data-work-pick=jaw][data-value=\"1\"]').click()");Thread.sleep(150);
+   js(a,"document.querySelector('[data-work-pick=shoulders][data-value=\"1\"]').click()");Thread.sleep(150);
+   js(a,"document.querySelector('[data-work-pick=hands][data-value=\"1\"]').click()");waitFor(a,"document.querySelector('[data-work-continue]')?.disabled===false");
+   js(a,"document.querySelector('[data-work-continue]').click()");waitFor(a,"!!document.querySelector('[data-action=complete]')");
+   js(a,"document.querySelector('[data-action=complete]').click()");waitFor(a,"location.hash==='#complete'");snapshot(a,"06-practice");
+   a.recreate();waitFor(a,"!!document.querySelector('[data-action=enter-demo]') && !document.querySelector('[data-action=enter-demo]').disabled");
+   js(a,"document.querySelector('[data-action=enter-demo]').click()");waitFor(a,"document.body.innerText.includes('A clearer night')");
+   run(a,"const s=JSON.parse((await Capacitor.Plugins.SecureVault.get({key:'state:demo'})).value);if(!s.records['lesson:12']?.data.complete)throw Error('Completed lesson lost');if(!Object.values(s.records).some(r=>r.kind==='night'&&r.data.wakeEvents?.some(e=>e.parkedThought==='Review my list after breakfast')))throw Error('Night note lost');");
+   for(String route:new String[]{"today","path","insights","journal","settings"}){js(a,"location.hash='#"+route+"'");Thread.sleep(200);assertEquals("No horizontal overflow: "+route,"true",js(a,"document.documentElement.scrollWidth<=innerWidth+1"));}
+   js(a,"location.hash='#settings'");waitFor(a,"!!document.querySelector('[data-action=signout]')");
+   js(a,"document.querySelector('[data-action=signout]').click()");waitFor(a,"!!document.querySelector('#auth-form')");
   }
  }
 }

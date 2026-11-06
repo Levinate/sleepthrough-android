@@ -1,74 +1,53 @@
-# SleepThrough — Android
+# SleepThrough — Android 0.6.0
 
-Отдельный репозиторий мобильного приложения. Веб-сайт находится в [Levinate/sleepthrough](https://github.com/Levinate/sleepthrough).
+Мобильный кабинет в дизайне веб-версии: вход → Today → курсы, отчёты, дневник и аккаунт. В приложении нет квиза, тарифов или оплаты.
 
-**Страница установки:** [Android на Railway](https://sleepthrough-android-production.up.railway.app). **[Скачать APK](https://sleepthrough-android-production.up.railway.app/app.apk)** · **[GitHub Release](https://github.com/Levinate/sleepthrough-android/releases/tag/v0.5.0-pilot)**.
+**[Скачать APK](https://sleepthrough-android-production.up.railway.app/SleepThrough-0.6.0-pilot.apk)** · **[GitHub Release](https://github.com/Levinate/sleepthrough-android/releases/tag/v0.6.0-pilot)** · [Веб-репозиторий](https://github.com/Levinate/sleepthrough).
 
-Документация: [стек](STACK.md), [публикация и обновление](DEPLOYMENT.md).
+## Установка и вход
 
-**Версия:** 0.5.0-pilot · **package ID:** `com.sleepthrough.app` · **versionCode:** 5.
+- Android 9+ с актуальным Android System WebView / Chrome (движок 100+).
+- Установите APK поверх прежней версии. Package ID `com.sleepthrough.app`, versionCode 6. Сертификат совпадает с 0.5.0; удалять приложение и данные не нужно.
+- Войдите через существующий аккаунт SleepThrough или создайте новый. Для регистрации требуется подтверждение email.
+- **Try test account** открывает отдельный локальный аккаунт Sarah с примером данных. Пароль и сеть ему не нужны. Это не общий пользователь Supabase.
+- После перезапуска можно снова открыть тестовый аккаунт: его заметки и уроки сохраняются отдельно. Личный аккаунт использует сохранённую сессию Supabase.
 
-Готовый APK находится в [releases/SleepThrough-0.5.0-pilot.apk](releases/SleepThrough-0.5.0-pilot.apk). Это universal debug-signed pilot для установки напрямую, не Google Play release. Обновлять поверх предыдущего SleepThrough, без удаления приложения/данных. Сохранён сертификат предыдущей версии. Нужны Android 9+ и актуальный WebView/Chrome.
+## Возможности
 
-## Функции
+- Navy/lavender оформление как в веб-кабинете, крупный текст, стабильная нижняя навигация с пятью разделами.
+- Today: пробуждения, ночная кнопка I'm awake, компактная скрываемая строка посещений, следующий урок и график.
+- 28 интерактивных уроков с узлами пути и закреплёнными неделями. Очки и число пройденных уроков — в аккаунте.
+- Ночной протокол: спокойный шаг, парковка мысли, дыхание, заметка в утреннем чек-ине.
+- Samsung Health через Health Connect; единый отчёт с дневником без сложения дубликатов. Подключение личных данных доступно после входа в личный аккаунт.
+- Шифрованное хранилище, приватная синхронизация, экспорт и управление разрешениями.
 
-- Тёмный иллюстрированный квиз из 21 вопроса с автоматическим переходом.
-- Профиль факторов с основаниями из ответов и изменяемой целью; проценты — доля сигналов квиза, не диагноз или вероятность болезни.
-- 28 интерактивных уроков: сортировка карточек, последовательности, парковка мысли, карта тела, личные планы, сравнение ночей, переформулирование мысли.
-- Янтарная I'm awake: успокоение, персональный шаг, заметка на утро, дыхание 4/6, следующий шаг без наблюдения за часами.
-- Утренний чек-ин и личные отчёты. Неизвестные данные не считаются нулём.
-- Samsung Health через Health Connect и общий отчёт с дневником, без сложения дубликатов пробуждений.
-- Локальный профиль, существующая авторизация Supabase, приватная синхронизация, экспорт JSON/CSV и выбор передачи сводок здоровья.
-- Шифрованное хранилище v2 с проверкой записи; чтение прежних v1 без очистки данных. Невосстановимый старый ключ не заменяется молча.
-- Демо Sarah, 52 и демонстрационный платёжный поток без реальных списаний.
+## Проверки и ограничения
 
-## Стек
+Проверены логика доступа, разделение аккаунтов, сохранение данных и APK-сценарий на Android 16. На Android 9 отдельно проверялось хранилище; очень старый WebView 69 не поддерживается. Теперь вместо зависшего запуска показываются ссылки на обновление WebView/Chrome. Реальные данные часов Samsung и доставку писем на личный адрес в этой версии не тестировали.
 
-JavaScript ES modules, HTML/CSS, esbuild 0.28.2; Capacitor 8.6.0; Kotlin/JDK 21; Android SDK 36, min SDK 28; AndroidX Health Connect; Android Keystore; AlarmManager/NotificationCompat; Supabase JS 2.119.0.
+Это universal debug-signed pilot для прямой установки, не Google Play release. Подробности: [IMPLEMENTATION_0.6.0.md](IMPLEMENTATION_0.6.0.md).
 
-`src/` — интерфейс и модели; `android/` — нативные плагины и проект; `shared/` — ресурсы, необходимые для автономной сборки; `test/` — проверки. Репозиторий собирается отдельно от сайта.
+## Стек и сборка
 
-## Сборка APK
-
-Установить Node.js 24+, pnpm, JDK 21 и Android SDK с platform/build-tools 36.
+JavaScript ES modules, HTML/CSS, esbuild 0.28.2, Capacitor 8.6.0, Supabase JS 2.119.0; Kotlin/JDK 21, Android SDK 36, min SDK 28, AndroidX Health Connect, Android Keystore.
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm test
 pnpm build
+pnpm test
 pnpm exec cap sync android
-```
-
-Задать `JAVA_HOME` и `ANDROID_HOME`, затем:
-
-```sh
 cd android
-./gradlew assembleDebug lintDebug
+./gradlew :app:assembleDebug :app:lintDebug
 ```
 
-Windows: `./gradlew.bat assembleDebug lintDebug` или `./build-android.ps1` из корня с заданными переменными. Сборка: `android/app/build/outputs/apk/debug/app-debug.apk`.
+Укажите `JAVA_HOME` и `ANDROID_HOME`. Windows: `./build-android.ps1`. APK: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-Личный ключ подписи не публикуется. Новый checkout на другой машине использует её debug key и не сможет обновить прежний APK без исходного ключа. Для обновлений установленного пилота используйте готовый опубликованный APK; постоянную release-подпись нужно настроить отдельно.
+В `src/cabinet.js` остаются только ночная помощь, чек-ин и напоминания. Старые модули квиза/коммерции не импортируются в сборку. Политики RLS Supabase ограничивают записи владельцем `auth.uid() = user_id`. Тестовые данные не отправляются в облако и не копируются в личный аккаунт.
 
-## Samsung Health
+Ключ подписи, секреты и локальные SDK-пути не публикуются. Новый debug key на другой машине не обновит старую установку: используйте готовый APK или тот же сертификат.
 
-В Samsung Health включить передачу сна в Health Connect. В приложении открыть Settings → Samsung Health connection и разрешить чтение сна. Наличие и полнота стадий зависят от устройства и источника. Реальные данные часов необходимо проверить на телефоне; эмулятор этого не заменяет.
+## Файл
 
-## Проверка
+Размер: 14,914,598 байт. SHA-256: `4d7d23b670248c8a2ba5b956bfa8760ea121542020a87e895263e58cd476820d`.
 
-33 теста логики и хранения прошли до разделения; нативные проверки Android 9/16, чтение старого формата, повторный запуск процесса и полный сценарий APK также прошли. Реальные данные Samsung и SMTP на личном адресе требуют отдельной проверки. Снимки и детали — в [IMPLEMENTATION_0.5.0.md](IMPLEMENTATION_0.5.0.md).
-
-## Сервис скачивания APK на Railway
-
-`distribution-server.cjs` раздаёт готовый APK из `releases/`, страницу установки, SHA-256, `/health`, HEAD и Range для докачки. Он не запускает Android и не хранит дневники. Dockerfile упаковывает только сервер и подписанный APK; установка SDK в Railway не требуется.
-
-```sh
-node --test distribution.test.cjs
-node distribution-server.cjs
-```
-
-Без секретов. Проверяйте, что новый APK подписан ожидаемым сертификатом, и обновляйте контрольную сумму вместе с версией.
-
-## Ограничения
-
-В текущем APK оплата демонстрационная. Настоящий Stripe Sandbox реализован отдельно в веб-сайте. Продукт не ставит диагноз и не обещает результат к 28-й ночи; автоматического ограничения окна сна нет. Для Play Store нужны release signing, проверка разрешений/политик и отдельная публикация.
+Исходники и APK разделены с веб-сайтом. Сервис Railway только раздаёт готовый APK, `/health`, `/sha256.txt` и поддерживает HEAD/Range. [Подробнее о развёртывании](DEPLOYMENT.md).

@@ -1,3 +1,7 @@
+## 0.6.0-pilot — 2026-11-06
+
+Mobile cabinet aligned with the website. Sign-in or an isolated test account is required; acquisition quiz, plans and checkout are absent from the shipping bundle. Five-tab navigation stays stable, learning totals live in Account, daily visits live on Today. Samsung Health and combined reports remain. Added an old-WebView update screen, account-gate tests and a new native cabinet journey test. See IMPLEMENTATION_0.6.0.md.
+
 # 0.5.0-pilot — 2026-11-06
 
 - Тёмный квиз из 21 экрана, объяснимый профиль факторов и изменяемая цель.

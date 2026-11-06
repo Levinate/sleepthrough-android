@@ -16,7 +16,7 @@ export const storage={
 const config=window.SLEEPTHROUGH_CONFIG;
 export const client=createClient(config.url,config.publishableKey,{auth:{storage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce'}});
 const empty=()=>({records:{},health:{enabled:false,cloud:false,records:{},summaries:{},selection:{},token:null,lastSync:null},quiz:{answers:[],step:0},source:'combined',reportVersion:1,started:false,migrated:false});
-export const store={uid:'local',user:null,state:empty(),status:'On this phone',busy:true,ready:false,healthBusy:false,conflicts:[],recovery:false,error:'',errorCode:'',errorDetail:'',errorPhase:'',generation:0};
+export const store={uid:'local',user:null,demo:false,state:empty(),status:'On this phone',busy:true,ready:false,healthBusy:false,conflicts:[],recovery:false,error:'',errorCode:'',errorDetail:'',errorPhase:'',generation:0};
 let notify=()=>{},write=Promise.resolve(),syncing=false,cloudTimer;
 export function subscribe(fn){notify=fn;}
 export function emit(){notify(store);}
@@ -54,12 +54,12 @@ export function persist(){
  const uid=store.uid,ticket=store.generation,snapshot=JSON.stringify(store.state);
  write=write.catch(()=>{}).then(()=>storage.setItem('state:'+uid,snapshot)).catch(error=>{if(ticket===store.generation){storageError('write',error);emit();}throw error;});return write;
 }
-export async function loadUser(user){
- const ticket=++store.generation,uid=user?.id||'local';store.ready=false;store.busy=true;store.error='';store.errorCode='';store.errorDetail='';store.errorPhase='';store.user=user;store.uid=uid;store.conflicts=[];store.state=empty();store.status=user?'Loading account…':'On this phone';emit();let phase='read',pruned=false;
+export async function loadUser(user,{demo=false,signedOut=false}={}){
+ const ticket=++store.generation,uid=user?.id||(demo?'demo':signedOut?'signed-out':'local');store.ready=false;store.busy=true;store.error='';store.errorCode='';store.errorDetail='';store.errorPhase='';store.user=user;store.demo=!user&&demo;store.uid=uid;store.conflicts=[];store.state=empty();store.status=user?'Loading account…':'On this phone';emit();let phase='read',pruned=false;
  try{
   // Finish earlier validated saves before reading the same account again.
   await write.catch(()=>{});if(ticket!==store.generation)return false;
-  const value=await storage.getItem('state:'+uid);if(ticket!==store.generation)return false;
+  const value=signedOut&&!user?null:await storage.getItem('state:'+uid);if(ticket!==store.generation)return false;
   phase='decode';if(value!==null)store.state=restore(value);
   pruned=pruneHealth();store.ready=true;
  }catch(error){if(ticket!==store.generation)return false;storageError(phase,error);}
@@ -111,7 +111,7 @@ export async function sync(){
  finally{syncing=false;emit();}
 }
 export async function resolveConflict(id,useLocal){const c=store.conflicts.find(c=>c.id===id);if(!c)return;if(useLocal){store.state.records[id].revision=c.remote.revision;}else store.state.records[id]={kind:c.remote.kind,data:c.remote.data,revision:c.remote.revision,dirty:false};store.conflicts=store.conflicts.filter(x=>x.id!==id);await persist();await sync();}
-export async function signOut(){await sync();if(Object.values(store.state.records).some(r=>r.dirty)&&!confirm('Some changes are only on this phone. Signing out will discard these local changes. Sign out anyway?'))return false;const old=store.uid;const{error}=await client.auth.signOut({scope:'local'});if(error)throw Error('Could not sign out. Try again.');await storage.removeItem('state:'+old);await loadUser(null);return true;}
+export async function signOut(){if(store.demo){await loadUser(null,{signedOut:true});return true;}await sync();if(Object.values(store.state.records).some(r=>r.dirty)&&!confirm('Some changes are only on this phone. Signing out will discard these local changes. Sign out anyway?'))return false;const old=store.uid;const{error}=await client.auth.signOut({scope:'local'});if(error)throw Error('Could not sign out. Try again.');await storage.removeItem('state:'+old);await loadUser(null,{signedOut:true});return true;}
 export async function startLocal(name){store.state.started=true;await setRecord('profile','profile',{name,adult:true,createdAt:new Date().toISOString()});}
 export async function healthSync(){
  if(store.healthBusy||!store.state.health.enabled||!native||!store.ready||store.busy||store.error)return;
@@ -132,3 +132,15 @@ export async function healthSync(){
 export async function clearHealth(){store.state.health=empty().health;for(const[id,r]of Object.entries(store.state.records))if(r.kind==='health'){r.deleted=true;r.dirty=true;}await persist();emit();await sync();}
 export async function setHealthCloud(enabled){store.state.health.cloud=enabled;await setRecord('consent-health','profile',{granted:enabled,version:1,date:new Date().toISOString()});if(enabled){for(const[day,s]of Object.entries(store.state.health.summaries))await setRecord('health:'+day,'health',cloudSummary(s));}else{for(const[id,r]of Object.entries(store.state.records))if(r.kind==='health'){r.deleted=true;r.dirty=true;}}await persist();await sync();}
 window.addEventListener('online',()=>sync());
+
+export async function enterDemo(){
+ if(!await loadUser(null,{demo:true}))return false;
+ if(!record('profile')){
+  const add=(id,kind,data)=>{store.state.records[id]={kind,data,revision:0,dirty:false,deleted:false};};
+  add('profile','profile',{name:'Sarah',adult:true,demo:true});
+  add('lesson:1','lesson',{day:1,step:2,complete:true,reflection:'I can notice a night without judging it.',contentVersion:2});
+  days(7).forEach((day,i)=>add('night:'+day,'night',{day,source:'manual',demo:true,checkinComplete:true,awakenings:[3,2,3,2,2,1,2][i],awakeMinutes:[42,30,38,28,25,18,30][i],sleepMinutes:[390,420,400,430,425,440,420][i],rested:'A little tired'}));
+  store.state.started=true;await persist();
+ }
+ store.status='Test account · sample data';emit();return true;
+}
