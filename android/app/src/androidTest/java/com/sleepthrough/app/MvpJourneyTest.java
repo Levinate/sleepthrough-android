@@ -3,6 +3,7 @@ package com.sleepthrough.app;
 import static org.junit.Assert.*;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -37,10 +38,19 @@ public class MvpJourneyTest {
  private void activitySnapshot(ActivityScenario<MainActivity> a,String name,CountDownLatch done,AtomicReference<Throwable> error){
   a.onActivity(activity->{try{
    android.view.View view=activity.getWindow().getDecorView();android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(view.getWidth(),view.getHeight(),android.graphics.Bitmap.Config.ARGB_8888);view.draw(new android.graphics.Canvas(bitmap));
-   java.io.File dir=new java.io.File(activity.getExternalFilesDir(null),"qa");dir.mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(dir,name+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
+   String output=InstrumentationRegistry.getArguments().getString("additionalTestOutputDir");java.io.File dir=output==null?new java.io.File(activity.getExternalFilesDir(null),"qa"):new java.io.File(output);dir.mkdirs();try(java.io.FileOutputStream out=new java.io.FileOutputStream(new java.io.File(dir,name+".png"))){bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,out);}bitmap.recycle();
   }catch(Throwable e){error.set(e);}finally{done.countDown();}});
  }
 
+
+ private void geometry(ActivityScenario<MainActivity> a,String route) throws Exception {
+  assertEquals("Side gutters on "+route,"true",js(a,"parseFloat(getComputedStyle(document.querySelector('#app')).paddingLeft)>=16 && parseFloat(getComputedStyle(document.querySelector('#app')).paddingRight)>=16"));
+  assertEquals("No horizontal overflow on "+route,"true",js(a,"document.documentElement.scrollWidth<=innerWidth+1"));
+  assertEquals("Icons are bounded on "+route,"true",js(a,"Array.from(document.querySelectorAll('.button .icon')).every(e=>e.getBoundingClientRect().width<=28&&e.getBoundingClientRect().height<=28)"));
+  assertEquals("Cards contain their buttons on "+route,"true",js(a,"Array.from(document.querySelectorAll('.card .button')).every(e=>{const b=e.getBoundingClientRect(),c=e.closest('.card').getBoundingClientRect();return b.left>=c.left+10&&b.right<=c.right-10;})"));
+  assertEquals("Lesson CTA has a usable height on "+route,"true",js(a,"Array.from(document.querySelectorAll('.studio-footer .button')).every(e=>e.getBoundingClientRect().height>=44&&e.getBoundingClientRect().height<=92)"));
+  assertEquals("Lesson CTA stays above navigation on "+route,"true",js(a,"Array.from(document.querySelectorAll('.studio-footer .button')).every(e=>e.getBoundingClientRect().bottom<=document.querySelector('#bottom').getBoundingClientRect().top-4)"));
+ }
  @Test public void cabinetRequiresLoginAndTestDataSurvivesRecreation() throws Exception {
   assertTrue("Never seed a personal phone",android.os.Build.HARDWARE.equals("ranchu") && (android.os.Build.MODEL.startsWith("sdk_gphone") || android.os.Build.MODEL.equals("Android SDK built for x86_64")));
   try(ActivityScenario<MainActivity> a=ActivityScenario.launch(MainActivity.class)){
@@ -54,7 +64,7 @@ public class MvpJourneyTest {
    }
    js(a,"document.querySelector('[data-action=enter-demo]').click()");waitFor(a,"document.body.innerText.includes('A clearer night') && location.hash==='#today'");
    assertEquals("Five stable app destinations","5",js(a,"document.querySelectorAll('#bottom a').length"));
-   snapshot(a,"02-today");
+   geometry(a,"today");snapshot(a,"02-today");
    js(a,"location.hash='#checkout'");waitFor(a,"document.body.innerText.includes('A clearer night')");
    assertEquals("No checkout","true",js(a,"!document.querySelector('[data-action=mvp-checkout]') && !document.querySelector('[data-mvp-answer]')"));
    js(a,"location.hash='#path'");waitFor(a,"!!document.querySelector('.week-tabs')");snapshot(a,"03-path");
@@ -63,7 +73,7 @@ public class MvpJourneyTest {
    assertEquals("Sample points stay separate","true",js(a,"document.querySelector('.learning-stats').innerText.includes('10')"));
    js(a,"location.hash='#today'");waitFor(a,"!!document.querySelector('[data-action=mvp-awake-open]')");
    js(a,"document.querySelector('[data-action=mvp-awake-open]').click()");waitFor(a,"!!document.querySelector('[data-action=mvp-night-next]')");
-   snapshot(a,"05-night");
+   geometry(a,"night");snapshot(a,"05-night");
    js(a,"document.querySelector('[data-action=mvp-night-next]').click()");Thread.sleep(300);
    js(a,"document.querySelector('[data-action=mvp-night-next]').click()");waitFor(a,"!!document.querySelector('#mvp-park-form')");
    js(a,"document.querySelector('[name=thought]').value='Review my list after breakfast';document.querySelector('#mvp-park-form').requestSubmit()");waitFor(a,"!!document.querySelector('.breath-circle')");
@@ -84,6 +94,15 @@ public class MvpJourneyTest {
    js(a,"document.querySelector('[data-action=enter-demo]').click()");waitFor(a,"document.body.innerText.includes('A clearer night')");
    run(a,"const s=JSON.parse((await Capacitor.Plugins.SecureVault.get({key:'state:demo'})).value);if(!s.records['lesson:12']?.data.complete)throw Error('Completed lesson lost');if(!Object.values(s.records).some(r=>r.kind==='night'&&r.data.wakeEvents?.some(e=>e.parkedThought==='Review my list after breakfast')))throw Error('Night note lost');");
    for(String route:new String[]{"today","path","insights","journal","settings"}){js(a,"location.hash='#"+route+"'");Thread.sleep(200);assertEquals("No horizontal overflow: "+route,"true",js(a,"document.documentElement.scrollWidth<=innerWidth+1"));}
+
+   for(int day:new int[]{1,4,8,12,2,3,10}){
+    js(a,"location.hash='#lesson/"+day+"'");waitFor(a,"document.querySelector('.studio-top>span')?.textContent==='DAY "+day+" / 28'");
+    js(a,"document.querySelector('[data-lesson-step=\"0\"]').click()");waitFor(a,"!!document.querySelector('.studio-intro')");geometry(a,"lesson intro "+day);snapshot(a,"intro-"+day);
+    js(a,"document.querySelector('[data-lesson-step=\"1\"]').click()");waitFor(a,"!!document.querySelector('.activity-workbench')");geometry(a,"lesson exercise "+day);snapshot(a,"exercise-"+day);
+   }
+   js(a,"location.hash='#insights'");waitFor(a,"!!document.querySelector('[data-source=samsung]')");
+   assertEquals("Integration is correctly labelled","true",js(a,"document.querySelector('[data-source=samsung]').innerText==='Health Integration'"));
+   js(a,"document.querySelector('[data-source=samsung]').click()");waitFor(a,"!!document.querySelector('.integration-empty')");geometry(a,"health empty state");snapshot(a,"07-health-integration");
    js(a,"location.hash='#settings'");waitFor(a,"!!document.querySelector('[data-action=signout]')");
    js(a,"document.querySelector('[data-action=signout]').click()");waitFor(a,"!!document.querySelector('#auth-form')");
   }

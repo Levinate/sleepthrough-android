@@ -10,3 +10,5 @@ Railway в этом репозитории обслуживает только �
 ## 0.6.0 cabinet
 
 `src/access.mjs` owns route authorization, `src/cabinet.js` contains night support/check-ins/reminders, and `src/cabinet-theme.css` aligns the interface with the web design. `src/boot.js` checks the WebView generation before loading the bundle. Test data uses a separate encrypted namespace and never a shared cloud login. No payment SDK or quiz UI is shipped.
+
+Android 0.6.1 loads base.css for layout and controls, practice.css for shared exercises, and cabinet-theme.css for the mobile cabinet. The older style.css and mvp.css are excluded from the APK.

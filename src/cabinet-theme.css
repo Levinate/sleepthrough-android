@@ -69,3 +69,91 @@ input:not([type=checkbox]),textarea,select{background:var(--deep);color:var(--in
 @media(max-width:370px){main{padding-left:16px;padding-right:16px}.week-tabs{grid-template-columns:repeat(4,78px);overflow-x:auto}.card{padding:20px}.metric{font-size:60px}.chart-col small{font-size:15px;letter-spacing:-.09em}#bottom a{font-size:15px}}
 
 html{scroll-behavior:auto}
+/* One app foundation: the acquisition stylesheets are no longer loaded. */
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;padding-top:calc(16px + var(--app-safe-top))}
+#profile-mode{font-size:13px;white-space:nowrap}
+#app{width:100%;max-width:920px;min-width:0;min-height:78vh;margin:0 auto;padding:28px 20px 120px;padding-bottom:calc(120px + var(--app-safe-bottom))}
+.button{width:100%;max-width:100%;min-width:0;box-sizing:border-box;white-space:normal;overflow-wrap:break-word}
+.button .icon{width:22px;height:22px;flex:0 0 22px}
+.lesson-feature .button{width:100%;max-width:100%;margin-right:0}
+.button.text-link{width:auto;justify-content:flex-start;text-align:left}
+.metrics strong{color:var(--ink)}
+.chart-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.chart-heading h2{margin:0;font-size:23px;line-height:1.25;overflow-wrap:normal}
+.chart-heading .segmented{width:144px;max-width:144px;margin:0;display:flex;flex-wrap:nowrap;gap:4px}
+.chart-heading .segmented button{flex:1;min-width:0;padding:8px 6px;white-space:nowrap;font-size:15px}
+.source-tabs{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:4px;align-items:stretch}
+.source-tabs button{width:100%;min-width:0;min-height:54px;line-height:1.3;word-break:normal;overflow-wrap:normal;hyphens:none}
+.integration-empty{text-align:center;padding:32px 24px}
+.empty-health-icon{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 24px;border-radius:18px;background:var(--panel2);color:var(--lav)}
+.empty-health-icon svg{width:28px;height:28px}
+.integration-empty h2{font-size:25px;line-height:1.3}
+/* Lesson controls use actual icon dimensions, not SVG intrinsic sizing. */
+.lesson-studio{width:100%;max-width:760px;min-width:0}
+.studio-top{gap:12px;font-size:12px;letter-spacing:.04em}
+.studio-top>strong{font-size:13px;line-height:1.4;max-width:45%;color:var(--muted)}
+.studio-top>a{border-color:var(--line);min-width:44px;width:44px;height:44px}
+.studio-progress{margin:24px 0 28px;gap:12px}
+.studio-progress>button{font-size:15px;min-height:44px;border:0;line-height:1.4}
+.studio-progress i{background:var(--panel2)}
+.studio-progress i.filled{background:var(--lav);box-shadow:none}
+.studio-progress [aria-current=step]{color:var(--ink)}
+.studio-stage{min-height:0}
+.studio-intro{text-align:left}
+.studio-intro .lab-intro-art{width:min(100%,320px);height:168px;margin:0 auto 28px;border-radius:22px}
+.studio-intro h1{font-size:30px;line-height:1.2;text-align:left;margin:0 0 20px}
+.studio-intro .lab-learn{font-size:18px;line-height:1.7;text-align:left;margin-bottom:24px}
+.lab-reveal{display:inline-flex;align-items:center;justify-content:center;min-height:48px;max-width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--lav);font-size:16px;text-align:left}
+.lab-preview{margin-top:20px;border-color:var(--line);border-radius:16px;background:var(--panel);padding:20px}
+.studio-footer{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:16px;margin:28px 0 20px;padding-top:24px;border-color:var(--line)}
+.studio-footer .button{width:100%;max-width:100%;min-width:0;min-height:56px;height:auto;gap:12px;margin:0;padding:14px 18px;background:var(--purple);box-shadow:none;border-radius:14px;font-size:17px;line-height:1.4}
+.studio-footer .button:active{transform:none;box-shadow:none}
+.studio-footer .button:disabled{background:var(--panel2);color:var(--muted);box-shadow:none}
+.studio-footer .text-button{width:auto;min-width:60px;white-space:nowrap;margin:0}
+.studio-footer.intro-footer{grid-template-columns:minmax(0,1fr)}
+.studio-footer{position:sticky;bottom:92px;bottom:calc(92px + var(--app-safe-bottom));z-index:21;background:var(--bg);padding:14px 0;margin-top:24px}
+.intro-footer>.text-button{display:none}
+.studio-note{font-size:15px;line-height:1.6;color:var(--muted);margin:0 0 16px}
+.lab-status{font-size:15px;line-height:1.6}
+.lab-field>span,.lab-field small{font-size:15px}
+.lab-chip .icon{width:18px;height:18px;flex:0 0 18px}
+.lab-chart .icon{width:22px;height:22px}
+.lab-artifact{overflow-wrap:break-word}
+/* Night mode keeps its own explicit gutters and one clear primary action. */
+body.night-mode #app{max-width:600px;padding:24px 20px 32px;min-height:100dvh}
+.night-mode .protocol{display:flex;flex-direction:column;min-height:calc(100dvh - 56px);width:100%;min-width:0;color:var(--ink)}
+.night-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.night-top .small{font-size:15px;line-height:1.4;color:var(--muted)}
+.night-top .text-button{display:inline-flex;align-items:center;min-height:44px;color:var(--amber);white-space:nowrap}
+.night-progress{display:flex;gap:6px;margin:0 0 32px}
+.night-progress>span{flex:1;min-width:0}
+.night-progress i{display:block;height:4px;border-radius:4px;background:var(--panel2)}
+.night-progress .current i,.night-progress .done i{background:var(--amber)}
+.night-progress>span>span{display:none}
+.night-progress .current>span{display:block;font-size:13px;line-height:1.4;white-space:nowrap;color:var(--amber);margin-top:8px}
+.protocol-content{padding:0 0 28px;min-height:0}
+.night-step-art{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:var(--panel);color:var(--amber);font:40px/1 Georgia,serif;margin-bottom:24px}
+.protocol h1{font-size:32px;line-height:1.2;margin:0 0 24px;letter-spacing:-.035em}
+.protocol p{font-size:18px;line-height:1.7;margin:0 0 20px}
+.protocol .night-factor{display:block;color:var(--amber);font-size:15px;margin-bottom:16px}
+.protocol .night-hint,.protocol small{font-size:15px;line-height:1.6;color:var(--muted)}
+.protocol-actions{margin-top:auto;display:grid;gap:8px;padding-top:20px}
+.protocol-actions .button{width:100%;min-height:56px;margin:0}
+.protocol .button.amber{background:var(--amber);color:var(--on-amber)}
+.protocol .button.outline,.protocol .button.soft{background:transparent;color:var(--amber);border-color:var(--line)}
+.protocol .button.soft{border-color:transparent;min-height:44px}
+.protocol textarea{min-height:140px;resize:vertical}
+.protocol form .button{margin-top:24px}
+.night-guidance{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:20px;margin:24px 0}
+.night-guidance h2{font-size:23px;line-height:1.3}
+.night-guidance p{font-size:17px}
+.night-episode{margin-top:16px;border-top:1px solid var(--line);padding-top:8px}
+.night-episode summary{font-size:15px;color:var(--muted);min-height:44px;cursor:pointer;padding:10px 0}
+.night-episode p{font-size:15px}
+.breathing-area{margin:32px 0 20px;text-align:center}
+.breath-circle{--breath-scale:.72;width:184px;height:184px;margin:30px auto 32px;display:grid;place-items:center;position:relative;isolation:isolate;border-radius:50%}
+.breath-circle:before{content:'';position:absolute;inset:0;z-index:-1;border:1px solid var(--amber);border-radius:50%;background:var(--panel);transform:scale(var(--breath-scale));transition:transform .2s linear;box-shadow:0 0 0 18px var(--panel2)}
+.breath-circle span{font:24px/1.3 Georgia,serif;color:var(--amber)}
+.protocol .breathing-area p{font-size:15px;color:var(--muted);margin:20px 0}
+.breathing-area .button{max-width:280px;margin:16px auto}
+@media(max-width:370px){#app{padding-left:16px;padding-right:16px}.night-mode #app{padding-left:20px;padding-right:20px}.chart-heading{gap:8px}.chart-heading h2{font-size:21px}.chart-heading .segmented{width:134px;max-width:134px}.studio-top>strong{display:none}.source-tabs{grid-template-columns:1fr 1fr 1.5fr}}

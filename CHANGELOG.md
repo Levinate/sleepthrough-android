@@ -1,3 +1,7 @@
+## 0.6.1-pilot
+
+Fixed mobile gutters, card button overflow, oversized lesson arrows and the Week/Month switch. Simplified the lesson intro and night support screens. Renamed the connected data section to Health Integration and added an empty state with a next step. The native journey checks geometry across all seven exercise types.
+
 ## 0.6.0-pilot — 2026-11-06
 
 Mobile cabinet aligned with the website. Sign-in or an isolated test account is required; acquisition quiz, plans and checkout are absent from the shipping bundle. Five-tab navigation stays stable, learning totals live in Account, daily visits live on Today. Samsung Health and combined reports remain. Added an old-WebView update screen, account-gate tests and a new native cabinet journey test. See IMPLEMENTATION_0.6.0.md.
